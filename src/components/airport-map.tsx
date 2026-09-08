@@ -12,6 +12,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
+// geoAlbersUsa only projects the 50 states + DC; territories like Puerto Rico
+// or Guam fall outside its clip region and make the projection fn return
+// null, which crashes react-simple-maps' Marker. Filter them out up front.
+const US_STATES = new Set([
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
+  "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+  "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+  "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
+  "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
+  "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+  "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+]);
+
 type AirportPoint = AirportDelaySummary & Pick<Airport, "name" | "city" | "state" | "lat" | "lon">;
 
 function delayColor(delay: number, min: number, max: number) {
@@ -50,7 +65,7 @@ export function AirportMap({
       const merged: AirportPoint[] = (summary ?? [])
         .map((s) => {
           const a = airportMap.get(s.origin_airport);
-          if (!a) return null;
+          if (!a || !a.state || !US_STATES.has(a.state)) return null;
           return { ...s, name: a.name, city: a.city, state: a.state, lat: a.lat, lon: a.lon };
         })
         .filter((p): p is AirportPoint => p !== null);
