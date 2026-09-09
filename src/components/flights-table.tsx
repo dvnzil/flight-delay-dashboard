@@ -20,6 +20,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
 
 const PAGE_SIZE = 25;
 const MAX_DELAY = 300;
@@ -176,7 +177,10 @@ export function FlightsTable({
       )}
 
       {!error && flights !== null && flights.length > 0 && (
-        <div className="rounded-lg border overflow-x-auto">
+        <div
+          key={`${page}-${airlineFilter}-${selectedAirport}-${delayRange.join(",")}`}
+          className="rounded-lg border overflow-x-auto animate-in fade-in-0 slide-in-from-bottom-1 duration-300"
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -189,11 +193,11 @@ export function FlightsTable({
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="font-mono text-sm">
               {flights.map((f) => (
                 <TableRow key={f.id}>
                   <TableCell>{f.flight_date}</TableCell>
-                  <TableCell>{f.airline_name}</TableCell>
+                  <TableCell className="font-sans">{f.airline_name}</TableCell>
                   <TableCell>
                     {f.origin_airport} → {f.dest_airport}
                   </TableCell>
@@ -202,11 +206,11 @@ export function FlightsTable({
                   <TableCell className="text-right">{f.distance ?? "—"}</TableCell>
                   <TableCell>
                     {f.cancelled ? (
-                      <Badge variant="destructive">Cancelled</Badge>
+                      <StatusBadge status="cancelled" />
                     ) : (f.arr_delay_minutes ?? 0) > 15 ? (
-                      <Badge variant="outline">Delayed</Badge>
+                      <StatusBadge status="delayed" />
                     ) : (
-                      <Badge variant="secondary">On time</Badge>
+                      <StatusBadge status="ontime" />
                     )}
                   </TableCell>
                 </TableRow>

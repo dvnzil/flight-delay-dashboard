@@ -9,6 +9,7 @@ import {
 } from "react-simple-maps";
 import { supabase, type Airport, type AirportDelaySummary } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { delayIntensityColor, DELAYED_HEX, BASE_HEX } from "@/lib/status-colors";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
@@ -28,15 +29,6 @@ const US_STATES = new Set([
 ]);
 
 type AirportPoint = AirportDelaySummary & Pick<Airport, "name" | "city" | "state" | "lat" | "lon">;
-
-function delayColor(delay: number, min: number, max: number) {
-  const t = max === min ? 0.5 : Math.min(1, Math.max(0, (delay - min) / (max - min)));
-  // low delay -> blue (good), high delay -> red (bad)
-  const r = Math.round(59 + t * (220 - 59));
-  const g = Math.round(130 + t * (38 - 130));
-  const b = Math.round(246 + t * (38 - 246));
-  return `rgb(${r},${g},${b})`;
-}
 
 export function AirportMap({
   selectedAirport,
@@ -92,7 +84,7 @@ export function AirportMap({
   const maxCount = Math.max(...counts);
 
   return (
-    <div className="w-full">
+    <div className="w-full animate-in fade-in-0 duration-500">
       <ComposableMap projection="geoAlbersUsa" className="w-full h-[500px]">
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
@@ -110,6 +102,7 @@ export function AirportMap({
         {points.map((p) => {
           const radius = 3 + 9 * Math.sqrt((p.flight_count ?? 0) / (maxCount || 1));
           const isSelected = selectedAirport === p.origin_airport;
+          const fill = delayIntensityColor(p.avg_delay ?? 0, min, max);
           return (
             <Marker
               key={p.origin_airport}
@@ -117,12 +110,22 @@ export function AirportMap({
               onClick={() => onSelectAirport(isSelected ? null : p.origin_airport)}
               style={{ default: { cursor: "pointer" } }}
             >
+              {isSelected && (
+                <circle
+                  r={radius + 4}
+                  fill="none"
+                  stroke="var(--delayed)"
+                  strokeWidth={1.5}
+                  className="animate-pulse"
+                />
+              )}
               <circle
                 r={radius}
-                fill={delayColor(p.avg_delay ?? 0, min, max)}
-                stroke={isSelected ? "var(--foreground)" : "white"}
+                fill={fill}
+                stroke={isSelected ? "var(--delayed)" : "var(--background)"}
                 strokeWidth={isSelected ? 2 : 0.75}
-                fillOpacity={0.85}
+                fillOpacity={0.9}
+                className="transition-[r] duration-300"
               />
               <title>
                 {p.name} ({p.origin_airport}) — {p.flight_count.toLocaleString()} flights, avg delay{" "}
@@ -132,13 +135,13 @@ export function AirportMap({
           );
         })}
       </ComposableMap>
-      <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+      <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 font-mono">
         <span>Bubble size = flight volume</span>
         <div className="flex items-center gap-2">
           <span>Less delay</span>
           <div
-            className="h-2 w-32 rounded-full"
-            style={{ background: "linear-gradient(to right, rgb(59,130,246), rgb(220,38,38))" }}
+            className="h-1.5 w-32 rounded-full"
+            style={{ background: `linear-gradient(to right, ${BASE_HEX}, ${DELAYED_HEX})` }}
           />
           <span>More delay</span>
         </div>

@@ -26,11 +26,11 @@ type DelayCauseRow = {
 };
 
 const COLORS = {
-  carrier: "#3b82f6",
-  weather: "#f59e0b",
-  nas: "#8b5cf6",
-  security: "#ef4444",
-  late_aircraft: "#10b981",
+  carrier: "var(--chart-1)",
+  weather: "var(--chart-2)",
+  nas: "var(--chart-3)",
+  security: "var(--chart-4)",
+  late_aircraft: "var(--chart-5)",
 };
 
 export function DelayBreakdownChart() {
@@ -76,16 +76,30 @@ export function DelayBreakdownChart() {
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height={400} className="animate-in fade-in-0 duration-500">
       <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis dataKey="airline" tick={{ fontSize: 12 }} />
-        <YAxis tick={{ fontSize: 12 }} label={{ value: "avg minutes", angle: -90, position: "insideLeft", fontSize: 12 }} />
+        <XAxis dataKey="airline" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} tickLine={{ stroke: "var(--border)" }} axisLine={{ stroke: "var(--border)" }} />
+        <YAxis
+          tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+          tickLine={{ stroke: "var(--border)" }}
+          axisLine={{ stroke: "var(--border)" }}
+          label={{ value: "avg minutes", angle: -90, position: "insideLeft", fontSize: 12, fill: "var(--muted-foreground)" }}
+        />
         <Tooltip
           formatter={(value) => `${value} min`}
           labelFormatter={(label, payload) => payload?.[0]?.payload?.name ?? label}
+          contentStyle={{
+            background: "var(--popover)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            color: "var(--popover-foreground)",
+            fontSize: 12,
+          }}
+          labelStyle={{ color: "var(--popover-foreground)" }}
+          cursor={{ fill: "var(--accent)" }}
         />
-        <Legend />
+        <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted-foreground)" }} />
         <Bar dataKey="Carrier" stackId="a" fill={COLORS.carrier} />
         <Bar dataKey="Weather" stackId="a" fill={COLORS.weather} />
         <Bar dataKey="NAS" stackId="a" fill={COLORS.nas} />

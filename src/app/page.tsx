@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Hero } from "@/components/hero";
 import { AirportMap } from "@/components/airport-map";
 import { CalendarHeatmap } from "@/components/calendar-heatmap";
@@ -14,8 +14,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const SECTION_TITLE = "font-heading text-2xl uppercase tracking-wide";
+
 export default function Home() {
   const [selectedAirport, setSelectedAirport] = useState<string | null>(null);
+  const flightsRef = useRef<HTMLDivElement>(null);
+
+  const handleSelectFromMap = useCallback((code: string | null) => {
+    setSelectedAirport(code);
+    if (code) {
+      flightsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   return (
     <div className="mx-auto max-w-6xl px-6">
@@ -24,21 +34,21 @@ export default function Home() {
       <div className="flex flex-col gap-8 pb-24">
         <Card>
           <CardHeader>
-            <CardTitle>Delay by airport</CardTitle>
+            <CardTitle className={SECTION_TITLE}>01 · Delay by airport</CardTitle>
             <CardDescription>
               Click an airport to filter the flight table below to flights departing from it.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AirportMap selectedAirport={selectedAirport} onSelectAirport={setSelectedAirport} />
+            <AirportMap selectedAirport={selectedAirport} onSelectAirport={handleSelectFromMap} />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Delay by day</CardTitle>
+            <CardTitle className={SECTION_TITLE}>02 · Delay by day</CardTitle>
             <CardDescription>
-              Daily average arrival delay across January and July 2024, showing seasonal patterns.
+              Daily average arrival delay across January 2024.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -48,7 +58,7 @@ export default function Home() {
 
         <Card>
           <CardHeader>
-            <CardTitle>What&apos;s causing the delays</CardTitle>
+            <CardTitle className={SECTION_TITLE}>03 · What&apos;s causing the delays</CardTitle>
             <CardDescription>
               Average delay minutes by cause, broken down by airline.
             </CardDescription>
@@ -58,9 +68,9 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card ref={flightsRef}>
           <CardHeader>
-            <CardTitle>Individual flights</CardTitle>
+            <CardTitle className={SECTION_TITLE}>04 · Individual flights</CardTitle>
             <CardDescription>Filter and browse flight-level records.</CardDescription>
           </CardHeader>
           <CardContent>
